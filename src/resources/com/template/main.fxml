@@ -40,17 +40,25 @@
             </Label>
             <TextField fx:id="txtAlimento" layoutX="210.0" layoutY="95.0" prefHeight="32.0" prefWidth="179.0" />
             <TextField fx:id="txtCalorias" layoutX="210.0" layoutY="134.0" prefHeight="32.0" prefWidth="179.0" />
-            <TableView fx:id="tblTabelaNutricional" layoutX="210.0" layoutY="227.0" prefHeight="307.0" prefWidth="371.0" style="-fx-background-color: gray;">
-              <columns>
-                <TableColumn fx:id="colId" prefWidth="64.0" text="ID" />
-                <TableColumn fx:id="colAlimento" prefWidth="152.0" text="Alimento" />
+
+            <TableView fx:id="tblTabelaNutricional" layoutX="210.0" layoutY="235.0" prefHeight="299.0" prefWidth="371.0" style="-fx-background-color: gray;">
+               <columns>
+                  <TableColumn fx:id="colId" prefWidth="64.0" text="ID" />
+                  <TableColumn fx:id="colAlimento" prefWidth="152.0" text="Alimento" />
                   <TableColumn fx:id="colCalorias" minWidth="9.0" prefWidth="74.0" text="Calorias" />
                   <TableColumn fx:id="colNatural" minWidth="0.0" prefWidth="81.0" text="Natural" />
-              </columns>
+               </columns>
             </TableView>
+
             <Button fx:id="btnDeletar" layoutX="501.0" layoutY="155.0" mnemonicParsing="false" onAction="#btnDeletarAction" prefHeight="50.0" prefWidth="80.0" text="Deletar" />
             <RadioButton fx:id="rbtnNaturalSim" layoutX="216.0" layoutY="182.0" mnemonicParsing="false" text="Sim" />
             <RadioButton fx:id="rbtnNaturalNao" layoutX="278.0" layoutY="182.0" mnemonicParsing="false" text="Não" />
+
+            <Label fx:id="lblStatus" layoutX="210.0" layoutY="212.0" text="Mensagem de status do sistema">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
          </children>
       </Pane>
    </children>
