@@ -3,6 +3,7 @@ package com.template;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image; // Importado para gerenciar o ícone
 import javafx.stage.Stage;
 
 public class Main extends Application
@@ -13,10 +14,14 @@ public class Main extends Application
         // Carrega o arquivo FXML
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("main.fxml"));
 
-        // CORREÇÃO: Removemos o ", 600, 400" para o JavaFX usar o tamanho real do FXML (747x560)
+        // Cria a cena com o tamanho real definido no seu FXML
         Scene scene = new Scene(loader.load());
 
-        stage.setTitle("Tabela Nutricional"); // Aproveitei para dar um título melhor que "Hello!"
+        stage.setTitle("Tabela Nutricional");
+
+        // CORREÇÃO AQUI: Aplica o ícone diretamente na barra de título do sistema operacional
+        stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
+
         stage.setScene(scene);
         stage.show();
     }

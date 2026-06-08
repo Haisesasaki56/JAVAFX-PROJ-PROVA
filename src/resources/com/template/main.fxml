@@ -18,6 +18,7 @@
             <Button fx:id="btnSalvar" layoutX="415.0" layoutY="96.0" mnemonicParsing="false" onAction="#btnSalvarAction" prefHeight="50.0" prefWidth="80.0" text="Salvar" />
             <Button fx:id="btnListar" layoutX="501.0" layoutY="96.0" mnemonicParsing="false" onAction="#btnListarAction" prefHeight="50.0" prefWidth="80.0" text="Listar" />
             <Button fx:id="btnAlterar" layoutX="415.0" layoutY="155.0" mnemonicParsing="false" onAction="#btnAlterarAction" prefHeight="50.0" prefWidth="80.0" text="Alterar" />
+
             <Text fx:id="txtTitulo" layoutX="193.0" layoutY="52.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CRUD TABELA NUTRICIONAL" underline="true" wrappingWidth="431.03369140625">
                <font>
                   <Font name="Courier New" size="28.0" />
