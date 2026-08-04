@@ -1,5 +1,7 @@
 package com.template;
 
+import com.template.util.DialogUtil;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,82 +11,89 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AlimentoDAO {
+
     private static final Logger logger = Logger.getLogger(AlimentoDAO.class.getName());
-    private ArrayList<AlimentoDTO> listaAlimento = new ArrayList<>();
 
-    public void cadastrarAlimento(AlimentoDTO dto) {
+    // CADASTRAR ALIMENTO
+    public void cadastrarAlimento(AlimentoDTO objAlimentoDTO) {
+        // Envolvendo "natural" com aspas para evitar erro de palavra reservada
         String sql = "INSERT INTO alimento (alimento, calorias, \"natural\") VALUES (?, ?, ?)";
-        // Ajustado para usar a classe ConexaoBD e o método conectarBD()
+
         try (Connection conn = new ConexaoBD().conectarBD();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement pstm = conn.prepareStatement(sql)) {
 
-            ps.setString(1, dto.getAlimento());
-            ps.setDouble(2, dto.getCalorias());
-            ps.setBoolean(3, dto.isNatural());
-            ps.execute();
+            pstm.setString(1, objAlimentoDTO.getAlimento());
+            pstm.setDouble(2, objAlimentoDTO.getCalorias());
+            pstm.setBoolean(3, objAlimentoDTO.isNatural());
 
-            logger.info("Alimento cadastrado com sucesso: " + dto.getAlimento());
+            pstm.execute();
+
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao cadastrar alimento", e);
+            DialogUtil.showError("Erro ao cadastrar o alimento no banco de dados.");
         }
     }
 
+    // LISTAR ALIMENTOS
     public ArrayList<AlimentoDTO> listaAlimentos() {
         String sql = "SELECT * FROM alimento";
-        listaAlimento.clear(); // Evita duplicar itens na interface do JavaFX ao atualizar
+        ArrayList<AlimentoDTO> lista = new ArrayList<>();
 
-        // Ajustado para usar a classe ConexaoBD e o método conectarBD()
-        try (Connection c = new ConexaoBD().conectarBD();
-             PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = new ConexaoBD().conectarBD();
+             PreparedStatement pstm = conn.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
 
             while (rs.next()) {
-                AlimentoDTO alimento = new AlimentoDTO();
-                alimento.setId(rs.getInt("id"));
-                alimento.setAlimento(rs.getString("alimento"));
-                alimento.setCalorias(rs.getDouble("calorias"));
-                alimento.setNatural(rs.getBoolean("natural"));
+                AlimentoDTO objAlimentoDTO = new AlimentoDTO();
+                objAlimentoDTO.setId(rs.getInt("id"));
+                objAlimentoDTO.setAlimento(rs.getString("alimento"));
+                objAlimentoDTO.setCalorias(rs.getDouble("calorias"));
+                objAlimentoDTO.setNatural(rs.getBoolean("natural"));
 
-                listaAlimento.add(alimento);
+                lista.add(objAlimentoDTO);
             }
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Erro ao listar alimentos", e);
+            logger.log(Level.SEVERE, "Erro ao pesquisar alimentos", e);
+            DialogUtil.showError("Erro ao carregar a lista de alimentos do banco de dados.");
         }
-
-        return listaAlimento;
+        return lista;
     }
 
-    public void alterarAlimento(AlimentoDTO dto) {
-        String sql = "UPDATE alimento SET alimento=?, calorias=?, \"natural\"=? WHERE id=?";
-        // Ajustado para usar a classe ConexaoBD e o método conectarBD()
+    // ALTERAR ALIMENTO
+    public void alterarAlimento(AlimentoDTO objAlimentoDTO) {
+        // Envolvendo "natural" com aspas para evitar erro de palavra reservada
+        String sql = "UPDATE alimento SET alimento = ?, calorias = ?, \"natural\" = ? WHERE id = ?";
+
         try (Connection conn = new ConexaoBD().conectarBD();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement pstm = conn.prepareStatement(sql)) {
 
-            ps.setString(1, dto.getAlimento());
-            ps.setDouble(2, dto.getCalorias());
-            ps.setBoolean(3, dto.isNatural());
-            ps.setInt(4, dto.getId());
-            ps.executeUpdate();
+            pstm.setString(1, objAlimentoDTO.getAlimento());
+            pstm.setDouble(2, objAlimentoDTO.getCalorias());
+            pstm.setBoolean(3, objAlimentoDTO.isNatural());
+            pstm.setInt(4, objAlimentoDTO.getId());
 
-            logger.info("Alimento alterado com sucesso! ID: " + dto.getId());
+            pstm.execute();
+
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao alterar alimento", e);
+            DialogUtil.showError("Erro ao atualizar as informações do alimento.");
         }
     }
 
-    public void excluirAlimento(int id) {
+    // EXCLUIR ALIMENTO
+    public void excluirAlimento(int idAlimento) {
         String sql = "DELETE FROM alimento WHERE id = ?";
-        // Ajustado para usar a classe ConexaoBD e o método conectarBD()
+
         try (Connection conn = new ConexaoBD().conectarBD();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement pstm = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, id);
-            ps.execute();
+            pstm.setInt(1, idAlimento);
+            pstm.execute();
 
-            logger.info("Alimento excluído com sucesso! ID: " + id);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Erro ao excluir alimento", e);
+            DialogUtil.showError("Erro ao remover o alimento do banco de dados.");
         }
     }
 }

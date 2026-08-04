@@ -1,5 +1,7 @@
 package com.template;
 
+import com.template.util.DialogUtil;
+import com.template.validator.AlimentoValidador;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,10 +12,11 @@ import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
+
+    private final AlimentoDAO alimentoDAO = new AlimentoDAO();
 
     @FXML private Button btnSalvar;
     @FXML private Button btnListar;
@@ -24,7 +27,6 @@ public class MainController implements Initializable {
     @FXML private TextField txtCalorias;
     @FXML private Text txtTitulo;
 
-    // UI/UX: Label de feedback exigido pelo critério de avaliação
     @FXML private Label lblStatus;
 
     @FXML private RadioButton rbtnNaturalSim;
@@ -42,8 +44,8 @@ public class MainController implements Initializable {
     // =========================
     @FXML
     private void btnSalvarAction(ActionEvent event) {
-        if (txtAlimento.getText().trim().isEmpty() || txtCalorias.getText().trim().isEmpty()) {
-            notificarUsuario("Por favor, preencha todos os campos!", true);
+        if (!AlimentoValidador.validarCampos(txtAlimento.getText(), txtCalorias.getText())) {
+            notificarUsuario("Por favor, preencha todos os campos com valores válidos!", true);
             return;
         }
 
@@ -52,7 +54,7 @@ public class MainController implements Initializable {
         dto.setCalorias(Double.parseDouble(txtCalorias.getText()));
         dto.setNatural(rbtnNaturalSim.isSelected());
 
-        new AlimentoDAO().cadastrarAlimento(dto);
+        alimentoDAO.cadastrarAlimento(dto);
 
         btnListarAction();
         limparCampos();
@@ -64,7 +66,8 @@ public class MainController implements Initializable {
     // =========================
     @FXML
     private void btnListarAction() {
-        ArrayList<AlimentoDTO> lista = new AlimentoDAO().listaAlimentos();
+        ArrayList<AlimentoDTO> lista = alimentoDAO.listaAlimentos();
+
         tblTabelaNutricional.setItems(FXCollections.observableArrayList(lista));
         txtTitulo.setText("CRUD TABELA NUTRICIONAL (" + lista.size() + " itens)");
     }
@@ -75,11 +78,10 @@ public class MainController implements Initializable {
     @FXML
     private void btnAlterarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
-
         if (selecionado == null) return;
 
-        if (txtAlimento.getText().trim().isEmpty() || txtCalorias.getText().trim().isEmpty()) {
-            notificarUsuario("Os campos não podem ficar vazios na edição.", true);
+        if (!AlimentoValidador.validarCampos(txtAlimento.getText(), txtCalorias.getText())) {
+            notificarUsuario("Os campos não podem ficar vazios ou inválidos na edição.", true);
             return;
         }
 
@@ -89,7 +91,7 @@ public class MainController implements Initializable {
         dto.setCalorias(Double.parseDouble(txtCalorias.getText()));
         dto.setNatural(rbtnNaturalSim.isSelected());
 
-        new AlimentoDAO().alterarAlimento(dto);
+        alimentoDAO.alterarAlimento(dto);
 
         btnListarAction();
         limparCampos();
@@ -97,22 +99,17 @@ public class MainController implements Initializable {
     }
 
     // =========================
-    // DELETAR (COM CONFIRMAÇÃO)
+    // DELETAR
     // =========================
     @FXML
     private void btnDeletarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
-
         if (selecionado == null) return;
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar Exclusão");
-        alert.setHeaderText(null);
-        alert.setContentText("Deseja realmente excluir o alimento '" + selecionado.getAlimento() + "'?");
+        boolean confirmou = DialogUtil.showConfirmation("Deseja realmente excluir o alimento '" + selecionado.getAlimento() + "'?");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            new AlimentoDAO().excluirAlimento(selecionado.getId());
+        if (confirmou) {
+            alimentoDAO.excluirAlimento(selecionado.getId());
             btnListarAction();
             limparCampos();
             notificarUsuario("Alimento excluído com sucesso!", false);
@@ -120,7 +117,7 @@ public class MainController implements Initializable {
     }
 
     // =========================
-    // LIMPAR CAMPOS & FOCO
+    // AUXILIARES
     // =========================
     private void limparCampos() {
         txtAlimento.clear();
@@ -133,9 +130,6 @@ public class MainController implements Initializable {
         txtAlimento.requestFocus();
     }
 
-    // =========================
-    // SELECIONAR LINHA
-    // =========================
     @FXML
     private void selecionarItem() {
         AlimentoDTO dto = tblTabelaNutricional.getSelectionModel().getSelectedItem();
@@ -152,27 +146,19 @@ public class MainController implements Initializable {
 
             btnAlterar.setDisable(false);
             btnDeletar.setDisable(false);
-            lblStatus.setText(""); // Limpa avisos anteriores ao selecionar novo item
+            lblStatus.setText("");
         }
     }
 
-    // =========================
-    // GERENCIADOR DE MENSAGENS (LABEL)
-    // =========================
     private void notificarUsuario(String mensagem, boolean ehErro) {
         lblStatus.setText(mensagem);
         if (ehErro) {
-            // Texto em vermelho vivo para destacar erros sobre o fundo verde
             lblStatus.setStyle("-fx-text-fill: #FF3333; -fx-font-weight: bold;");
         } else {
-            // Texto em amarelo ou branco para indicar sucesso de forma legível no verde
             lblStatus.setStyle("-fx-text-fill: #FFFF00; -fx-font-weight: bold;");
         }
     }
 
-    // =========================
-    // INIT
-    // =========================
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
