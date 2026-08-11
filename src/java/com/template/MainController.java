@@ -1,6 +1,7 @@
 package com.template;
 
 import com.template.util.DialogUtil;
+import com.template.util.FormUtil;
 import com.template.validator.AlimentoValidador;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -17,6 +18,7 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     private final AlimentoDAO alimentoDAO = new AlimentoDAO();
+    private FormUtil formUtil; // Gerenciador do formulário integrado
 
     @FXML private Button btnSalvar;
     @FXML private Button btnListar;
@@ -26,141 +28,92 @@ public class MainController implements Initializable {
     @FXML private TextField txtAlimento;
     @FXML private TextField txtCalorias;
     @FXML private Text txtTitulo;
-
     @FXML private Label lblStatus;
 
     @FXML private RadioButton rbtnNaturalSim;
     @FXML private RadioButton rbtnNaturalNao;
 
     @FXML private TableView<AlimentoDTO> tblTabelaNutricional;
-
     @FXML private TableColumn<AlimentoDTO, Integer> colId;
     @FXML private TableColumn<AlimentoDTO, String> colAlimento;
     @FXML private TableColumn<AlimentoDTO, Double> colCalorias;
     @FXML private TableColumn<AlimentoDTO, Boolean> colNatural;
 
-    // =========================
-    // SALVAR
-    // =========================
+    // ==========================================
+    // MÉTODOS DE AÇÃO (FLUXO PRINCIPAL)
+    // ==========================================
+
     @FXML
     private void btnSalvarAction(ActionEvent event) {
-        if (!AlimentoValidador.validarCampos(txtAlimento.getText(), txtCalorias.getText())) {
-            notificarUsuario("Por favor, preencha todos os campos com valores válidos!", true);
-            return;
-        }
+        if (!validarFormulario()) return;
 
-        AlimentoDTO dto = new AlimentoDTO();
-        dto.setAlimento(txtAlimento.getText().trim());
-        dto.setCalorias(Double.parseDouble(txtCalorias.getText()));
-        dto.setNatural(rbtnNaturalSim.isSelected());
-
+        AlimentoDTO dto = formUtil.extrairDadosDaTela();
         alimentoDAO.cadastrarAlimento(dto);
 
-        btnListarAction();
-        limparCampos();
-        notificarUsuario("Alimento cadastrado com sucesso!", false);
+        finalizarAcao("Alimento cadastrado com sucesso!", false);
     }
 
-    // =========================
-    // LISTAR & CONTADOR
-    // =========================
-    @FXML
-    private void btnListarAction() {
-        ArrayList<AlimentoDTO> lista = alimentoDAO.listaAlimentos();
-
-        tblTabelaNutricional.setItems(FXCollections.observableArrayList(lista));
-        txtTitulo.setText("CRUD TABELA NUTRICIONAL (" + lista.size() + " itens)");
-    }
-
-    // =========================
-    // ALTERAR
-    // =========================
     @FXML
     private void btnAlterarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
         if (selecionado == null) return;
 
-        if (!AlimentoValidador.validarCampos(txtAlimento.getText(), txtCalorias.getText())) {
-            notificarUsuario("Os campos não podem ficar vazios ou inválidos na edição.", true);
-            return;
-        }
+        if (!validarFormulario()) return;
 
-        AlimentoDTO dto = new AlimentoDTO();
+        AlimentoDTO dto = formUtil.extrairDadosDaTela();
         dto.setId(selecionado.getId());
-        dto.setAlimento(txtAlimento.getText().trim());
-        dto.setCalorias(Double.parseDouble(txtCalorias.getText()));
-        dto.setNatural(rbtnNaturalSim.isSelected());
 
         alimentoDAO.alterarAlimento(dto);
 
-        btnListarAction();
-        limparCampos();
-        notificarUsuario("Alimento atualizado com sucesso!", false);
+        finalizarAcao("Alimento atualizado com sucesso!", false);
     }
 
-    // =========================
-    // DELETAR
-    // =========================
     @FXML
     private void btnDeletarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
         if (selecionado == null) return;
 
-        boolean confirmou = DialogUtil.showConfirmation("Deseja realmente excluir o alimento '" + selecionado.getAlimento() + "'?");
+        boolean confirmou = DialogUtil.showConfirmation(
+                "Deseja realmente excluir o alimento '" + selecionado.getAlimento() + "'?"
+        );
 
         if (confirmou) {
             alimentoDAO.excluirAlimento(selecionado.getId());
-            btnListarAction();
-            limparCampos();
-            notificarUsuario("Alimento excluído com sucesso!", false);
+            finalizarAcao("Alimento excluído com sucesso!", false);
         }
-    }
-
-    // =========================
-    // AUXILIARES
-    // =========================
-    private void limparCampos() {
-        txtAlimento.clear();
-        txtCalorias.clear();
-        rbtnNaturalSim.setSelected(false);
-        rbtnNaturalNao.setSelected(false);
-
-        btnAlterar.setDisable(true);
-        btnDeletar.setDisable(true);
-        txtAlimento.requestFocus();
     }
 
     @FXML
-    private void selecionarItem() {
-        AlimentoDTO dto = tblTabelaNutricional.getSelectionModel().getSelectedItem();
-
-        if (dto != null) {
-            txtAlimento.setText(dto.getAlimento());
-            txtCalorias.setText(String.valueOf(dto.getCalorias()));
-
-            if (dto.isNatural()) {
-                rbtnNaturalSim.setSelected(true);
-            } else {
-                rbtnNaturalNao.setSelected(true);
-            }
-
-            btnAlterar.setDisable(false);
-            btnDeletar.setDisable(false);
-            lblStatus.setText("");
-        }
+    private void btnListarAction() {
+        ArrayList<AlimentoDTO> lista = alimentoDAO.listaAlimentos();
+        tblTabelaNutricional.setItems(FXCollections.observableArrayList(lista));
+        txtTitulo.setText("CRUD TABELA NUTRICIONAL (" + lista.size() + " itens)");
     }
 
-    private void notificarUsuario(String mensagem, boolean ehErro) {
-        lblStatus.setText(mensagem);
-        if (ehErro) {
-            lblStatus.setStyle("-fx-text-fill: #FF3333; -fx-font-weight: bold;");
-        } else {
-            lblStatus.setStyle("-fx-text-fill: #FFFF00; -fx-font-weight: bold;");
+    // ==========================================
+    // MÉTODOS COMPLEMENTARES
+    // ==========================================
+
+    private boolean validarFormulario() {
+        if (!AlimentoValidador.validarCampos(txtAlimento.getText(), txtCalorias.getText())) {
+            formUtil.notificarUsuario("Por favor, preencha todos os campos com valores válidos!", true);
+            return false;
         }
+        return true;
+    }
+
+    private void finalizarAcao(String mensagem, boolean ehErro) {
+        btnListarAction();
+        formUtil.limparCampos();
+        formUtil.notificarUsuario(mensagem, ehErro);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Inicializa o utilitário do formulário passando os componentes injetados
+        this.formUtil = new FormUtil(txtAlimento, txtCalorias, rbtnNaturalSim,
+                rbtnNaturalNao, btnAlterar, btnDeletar, lblStatus);
+
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colAlimento.setCellValueFactory(new PropertyValueFactory<>("alimento"));
         colCalorias.setCellValueFactory(new PropertyValueFactory<>("calorias"));
@@ -170,12 +123,14 @@ public class MainController implements Initializable {
         btnDeletar.setDisable(true);
         if (lblStatus != null) lblStatus.setText("");
 
-        tblTabelaNutricional.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                selecionarItem();
+        // Vincula a seleção da tabela ao preenchimento automático via formUtil
+        tblTabelaNutricional.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            if (newSel != null) {
+                formUtil.popularCampos(newSel);
             }
         });
 
+        // Restringe a entrada de caracteres não numéricos na calorias
         txtCalorias.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*([\\.]\\d*)?")) {
                 txtCalorias.setText(oldValue);
