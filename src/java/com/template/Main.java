@@ -3,32 +3,34 @@ package com.template;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.image.Image; // Importado para gerenciar o ícone
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-public class Main extends Application
-{
+import java.io.InputStream;
+
+/**
+ * Classe principal de inicialização da Aplicação JavaFX.
+ */
+public class Main extends Application {
+
     @Override
-    public void start(Stage stage) throws Exception
-    {
-        // Carrega o arquivo FXML
-        FXMLLoader loader = new FXMLLoader(Main.class.getResource("main.fxml"));
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/template/main.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 900, 600);
 
-        // Cria a cena com o tamanho real definido no seu FXML
-        Scene scene = new Scene(loader.load());
+        primaryStage.setTitle("Nutritional CRUD - Gerenciador Nutricional");
 
-        stage.setTitle("Tabela Nutricional");
+        // Carrega o ícone caso exista na pasta de recursos
+        InputStream iconStream = getClass().getResourceAsStream("/com/template/icon.png");
+        if (iconStream != null) {
+            primaryStage.getIcons().add(new Image(iconStream));
+        }
 
-        // CORREÇÃO AQUI: Aplica o ícone diretamente na barra de título do sistema operacional
-        stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
-
-        stage.setScene(scene);
-        stage.show();
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
-    public static void main(String[] args)
-    {
-        // Inicia a aplicação passando os argumentos
+    public static void main(String[] args) {
         launch(args);
     }
 }

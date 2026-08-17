@@ -1,99 +1,70 @@
 package com.template;
 
-import com.template.util.DialogUtil;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class AlimentoDAO {
+public class AlimentoDAO implements IAlimentoDAO {
 
-    private static final Logger logger = Logger.getLogger(AlimentoDAO.class.getName());
-
-    // CADASTRAR ALIMENTO
-    public void cadastrarAlimento(AlimentoDTO objAlimentoDTO) {
-        // Envolvendo "natural" com aspas para evitar erro de palavra reservada
+    @Override
+    public void cadastrarAlimento(AlimentoDTO obj) {
+        // Uso de aspas em "natural" para evitar conflito com palavra reservada do Postgres
         String sql = "INSERT INTO alimento (alimento, calorias, \"natural\") VALUES (?, ?, ?)";
-
         try (Connection conn = new ConexaoBD().conectarBD();
              PreparedStatement pstm = conn.prepareStatement(sql)) {
-
-            pstm.setString(1, objAlimentoDTO.getAlimento());
-            pstm.setDouble(2, objAlimentoDTO.getCalorias());
-            pstm.setBoolean(3, objAlimentoDTO.isNatural());
-
+            pstm.setString(1, obj.getAlimento());
+            pstm.setDouble(2, obj.getCalorias());
+            pstm.setBoolean(3, obj.isNatural());
             pstm.execute();
-
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Erro ao cadastrar alimento", e);
-            DialogUtil.showError("Erro ao cadastrar o alimento no banco de dados.");
+            throw new RuntimeException("Erro DAO Cadastrar: " + e.getMessage());
         }
     }
 
-    // LISTAR ALIMENTOS
-    public ArrayList<AlimentoDTO> listaAlimentos() {
-        String sql = "SELECT * FROM alimento";
+    @Override
+    public ArrayList<AlimentoDTO> listarAlimentos() {
+        String sql = "SELECT * FROM alimento ORDER BY id";
         ArrayList<AlimentoDTO> lista = new ArrayList<>();
-
         try (Connection conn = new ConexaoBD().conectarBD();
              PreparedStatement pstm = conn.prepareStatement(sql);
              ResultSet rs = pstm.executeQuery()) {
-
             while (rs.next()) {
-                AlimentoDTO objAlimentoDTO = new AlimentoDTO();
-                objAlimentoDTO.setId(rs.getInt("id"));
-                objAlimentoDTO.setAlimento(rs.getString("alimento"));
-                objAlimentoDTO.setCalorias(rs.getDouble("calorias"));
-                objAlimentoDTO.setNatural(rs.getBoolean("natural"));
-
-                lista.add(objAlimentoDTO);
+                AlimentoDTO dto = new AlimentoDTO();
+                dto.setId(rs.getInt("id"));
+                dto.setAlimento(rs.getString("alimento"));
+                dto.setCalorias(rs.getDouble("calorias"));
+                dto.setNatural(rs.getBoolean("natural"));
+                lista.add(dto);
             }
-
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Erro ao pesquisar alimentos", e);
-            DialogUtil.showError("Erro ao carregar a lista de alimentos do banco de dados.");
+            throw new RuntimeException("Erro DAO Listar: " + e.getMessage());
         }
         return lista;
     }
 
-    // ALTERAR ALIMENTO
-    public void alterarAlimento(AlimentoDTO objAlimentoDTO) {
-        // Envolvendo "natural" com aspas para evitar erro de palavra reservada
+    @Override
+    public void alterarAlimento(AlimentoDTO obj) {
         String sql = "UPDATE alimento SET alimento = ?, calorias = ?, \"natural\" = ? WHERE id = ?";
-
         try (Connection conn = new ConexaoBD().conectarBD();
              PreparedStatement pstm = conn.prepareStatement(sql)) {
-
-            pstm.setString(1, objAlimentoDTO.getAlimento());
-            pstm.setDouble(2, objAlimentoDTO.getCalorias());
-            pstm.setBoolean(3, objAlimentoDTO.isNatural());
-            pstm.setInt(4, objAlimentoDTO.getId());
-
+            pstm.setString(1, obj.getAlimento());
+            pstm.setDouble(2, obj.getCalorias());
+            pstm.setBoolean(3, obj.isNatural());
+            pstm.setInt(4, obj.getId());
             pstm.execute();
-
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Erro ao alterar alimento", e);
-            DialogUtil.showError("Erro ao atualizar as informações do alimento.");
+            throw new RuntimeException("Erro DAO Alterar: " + e.getMessage());
         }
     }
 
-    // EXCLUIR ALIMENTO
-    public void excluirAlimento(int idAlimento) {
+    @Override
+    public void excluirAlimento(int id) {
         String sql = "DELETE FROM alimento WHERE id = ?";
-
         try (Connection conn = new ConexaoBD().conectarBD();
              PreparedStatement pstm = conn.prepareStatement(sql)) {
-
-            pstm.setInt(1, idAlimento);
+            pstm.setInt(1, id);
             pstm.execute();
-
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Erro ao excluir alimento", e);
-            DialogUtil.showError("Erro ao remover o alimento do banco de dados.");
+            throw new RuntimeException("Erro DAO Excluir: " + e.getMessage());
         }
     }
 }

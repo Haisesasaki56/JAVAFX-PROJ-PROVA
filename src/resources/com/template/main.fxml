@@ -1,66 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="560.0" prefWidth="747.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.template.MainController">
-   <children>
-      <Pane prefHeight="562.0" prefWidth="747.0" style="-fx-background-color: green;">
-         <children>
-            <Button fx:id="btnSalvar" layoutX="415.0" layoutY="96.0" mnemonicParsing="false" onAction="#btnSalvarAction" prefHeight="50.0" prefWidth="80.0" text="Salvar" />
-            <Button fx:id="btnListar" layoutX="501.0" layoutY="96.0" mnemonicParsing="false" onAction="#btnListarAction" prefHeight="50.0" prefWidth="80.0" text="Listar" />
-            <Button fx:id="btnAlterar" layoutX="415.0" layoutY="155.0" mnemonicParsing="false" onAction="#btnAlterarAction" prefHeight="50.0" prefWidth="80.0" text="Alterar" />
+<VBox fx:controller="com.template.MainController" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+   </padding>
 
-            <Text fx:id="txtTitulo" layoutX="193.0" layoutY="52.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CRUD TABELA NUTRICIONAL" underline="true" wrappingWidth="431.03369140625">
-               <font>
-                  <Font name="Courier New" size="28.0" />
-               </font>
-            </Text>
-            <Label fx:id="lblAlimento" layoutX="117.0" layoutY="101.0" style="-fx-font-weight: bold;" text="Alimento">
-               <font>
-                  <Font name="Courier New" size="17.0" />
-               </font>
-            </Label>
-            <Label fx:id="lblCalorias" layoutX="112.0" layoutY="140.0" style="-fx-font-weight: bold;" text="Calorias">
-               <font>
-                  <Font name="Courier New" size="17.0" />
-               </font>
-            </Label>
-            <Label fx:id="lblNatural" layoutX="117.0" layoutY="180.0" style="-fx-font-weight: bold;" text="Natural">
-               <font>
-                  <Font name="Courier New" size="17.0" />
-               </font>
-            </Label>
-            <TextField fx:id="txtAlimento" layoutX="210.0" layoutY="95.0" prefHeight="32.0" prefWidth="179.0" />
-            <TextField fx:id="txtCalorias" layoutX="210.0" layoutY="134.0" prefHeight="32.0" prefWidth="179.0" />
+   <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Tabela Nutricional (NUTRI CRUD)"/>
 
-            <TableView fx:id="tblTabelaNutricional" layoutX="210.0" layoutY="235.0" prefHeight="299.0" prefWidth="371.0" style="-fx-background-color: gray;">
-               <columns>
-                  <TableColumn fx:id="colId" prefWidth="64.0" text="ID" />
-                  <TableColumn fx:id="colAlimento" prefWidth="152.0" text="Alimento" />
-                  <TableColumn fx:id="colCalorias" minWidth="9.0" prefWidth="74.0" text="Calorias" />
-                  <TableColumn fx:id="colNatural" minWidth="0.0" prefWidth="81.0" text="Natural" />
-               </columns>
-            </TableView>
+   <GridPane hgap="10.0" vgap="10.0">
+      <columnConstraints>
+         <ColumnConstraints minWidth="100.0" prefWidth="120.0"/>
+         <ColumnConstraints hgrow="ALWAYS"/>
+      </columnConstraints>
 
-            <Button fx:id="btnDeletar" layoutX="501.0" layoutY="155.0" mnemonicParsing="false" onAction="#btnDeletarAction" prefHeight="50.0" prefWidth="80.0" text="Deletar" />
-            <RadioButton fx:id="rbtnNaturalSim" layoutX="216.0" layoutY="182.0" mnemonicParsing="false" text="Sim" />
-            <RadioButton fx:id="rbtnNaturalNao" layoutX="278.0" layoutY="182.0" mnemonicParsing="false" text="Não" />
+      <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Alimento:"/>
+      <TextField fx:id="txtAlimento" GridPane.columnIndex="1" GridPane.rowIndex="0" promptText="Ex: Maçã"/>
 
-            <Label fx:id="lblStatus" layoutX="210.0" layoutY="212.0" text="Mensagem de status do sistema">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-         </children>
-      </Pane>
-   </children>
-</AnchorPane>
+      <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Calorias:"/>
+      <TextField fx:id="txtCalorias" GridPane.columnIndex="1" GridPane.rowIndex="1" promptText="0.0"/>
+
+      <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Natural:"/>
+      <HBox spacing="15.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+         <RadioButton fx:id="rbtnNaturalSim" text="Sim"/>
+         <RadioButton fx:id="rbtnNaturalNao" text="Não"/>
+      </HBox>
+   </GridPane>
+
+   <HBox alignment="CENTER_RIGHT" spacing="10.0">
+      <Button fx:id="btnSalvar" onAction="#btnSalvarAction" style="-fx-background-color: #22c55e; -fx-text-fill: white; -fx-font-weight: bold;" text="Salvar"/>
+      <Button fx:id="btnListar" onAction="#btnListarAction" style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: bold;" text="Listar"/>
+      <Button fx:id="btnAlterar" disable="true" onAction="#btnAlterarAction" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold;" text="Alterar"/>
+      <Button fx:id="btnDeletar" disable="true" onAction="#btnDeletarAction" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold;" text="Deletar"/>
+   </HBox>
+
+   <Label fx:id="lblStatus" style="-fx-text-fill: gray;"/>
+
+   <TableView fx:id="tblTabelaNutricional" VBox.vgrow="ALWAYS">
+      <columns>
+         <TableColumn fx:id="colId" prefWidth="60.0" text="ID"/>
+         <TableColumn fx:id="colAlimento" prefWidth="200.0" text="Alimento"/>
+         <TableColumn fx:id="colCalorias" prefWidth="120.0" text="Calorias"/>
+         <TableColumn fx:id="colNatural" prefWidth="100.0" text="Natural"/>
+      </columns>
+      <columnResizePolicy>
+         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+      </columnResizePolicy>
+   </TableView>
+
+</VBox>

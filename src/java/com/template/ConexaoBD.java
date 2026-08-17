@@ -11,10 +11,9 @@ public class ConexaoBD {
 
     public Connection conectarBD() {
         try {
-            // Importante: retorna a conexão configurada usando as constantes
             return DriverManager.getConnection(URL, USUARIO, SENHA);
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao conectar: " + e.getMessage(), e);
+            throw new RuntimeException("Erro ao conectar ao PostgreSQL: " + e.getMessage(), e);
         }
     }
 }

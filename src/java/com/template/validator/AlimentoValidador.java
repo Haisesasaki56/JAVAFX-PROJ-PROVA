@@ -1,19 +1,14 @@
 package com.template.validator;
 
 public class AlimentoValidador {
-
-    public static boolean validarCampos(String alimento, String caloriasStr) {
+    public static void validar(String alimento, String calorias) {
         if (alimento == null || alimento.trim().isEmpty()) {
-            return false;
-        }
-        if (caloriasStr == null || caloriasStr.trim().isEmpty()) {
-            return false;
+            throw new IllegalArgumentException("O nome do alimento é obrigatório!");
         }
         try {
-            Double.parseDouble(caloriasStr);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+            Double.parseDouble(calorias);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("As calorias devem ser um número válido!");
         }
     }
 }
