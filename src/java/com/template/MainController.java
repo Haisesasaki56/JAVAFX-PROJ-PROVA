@@ -15,20 +15,13 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
-    // DIP: O Controller interage com a camada de Serviço
+    // DIP: Dependência da abstração (Service)
     private final AlimentoService alimentoService = new AlimentoService(new AlimentoDAO());
 
-    @FXML private Button btnSalvar;
-    @FXML private Button btnListar;
-    @FXML private Button btnAlterar;
-    @FXML private Button btnDeletar;
-
-    @FXML private TextField txtAlimento;
-    @FXML private TextField txtCalorias;
+    @FXML private Button btnSalvar, btnListar, btnAlterar, btnDeletar;
+    @FXML private TextField txtAlimento, txtCalorias;
     @FXML private Label lblStatus;
-
-    @FXML private RadioButton rbtnNaturalSim;
-    @FXML private RadioButton rbtnNaturalNao;
+    @FXML private RadioButton rbtnNaturalSim, rbtnNaturalNao;
 
     @FXML private TableView<AlimentoDTO> tblTabelaNutricional;
     @FXML private TableColumn<AlimentoDTO, Integer> colId;
@@ -39,7 +32,7 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarColunasTabela();
-        configurarListeners();
+        configurarListeners(); // <--- Onde o Regex é ativado
         configurarGruposRadioButton();
         btnListarAction();
     }
@@ -52,9 +45,17 @@ public class MainController implements Initializable {
     }
 
     private void configurarListeners() {
+        // Listener para seleção da tabela
         tblTabelaNutricional.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                popularCampos(newSel);
+            if (newSel != null) popularCampos(newSel);
+        });
+
+        // ============================================================
+        // AQUI ESTÁ O REGEX (MÁSCARA DE ENTRADA)
+        // ============================================================
+        txtCalorias.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*([\\.,]\\d*)?")) {
+                txtCalorias.setText(oldValue);
             }
         });
     }
@@ -65,16 +66,11 @@ public class MainController implements Initializable {
         rbtnNaturalNao.setToggleGroup(grupoNatural);
     }
 
-    // ==========================================
-    // MÉTODOS DE AÇÃO DO FXML (Nomes Exatos)
-    // ==========================================
-
     @FXML
     private void btnSalvarAction(ActionEvent event) {
         try {
             AlimentoDTO dto = FormUtil.extrairDados(txtAlimento, txtCalorias, rbtnNaturalSim);
             alimentoService.salvarAlimento(dto, txtCalorias.getText());
-
             DialogUtil.showInfo("Alimento cadastrado com sucesso!");
             finalizarAcao();
         } catch (Exception e) {
@@ -85,18 +81,13 @@ public class MainController implements Initializable {
     @FXML
     private void btnAlterarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
-        if (selecionado == null) {
-            DialogUtil.showError("Selecione um item na tabela para alterar!");
-            return;
-        }
+        if (selecionado == null) return;
 
         try {
             AlimentoDTO dto = FormUtil.extrairDados(txtAlimento, txtCalorias, rbtnNaturalSim);
             dto.setId(selecionado.getId());
-
             alimentoService.atualizarAlimento(dto, txtCalorias.getText());
-
-            DialogUtil.showInfo("Alimento atualizado com sucesso!");
+            DialogUtil.showInfo("Alimento atualizado!");
             finalizarAcao();
         } catch (Exception e) {
             DialogUtil.showError(e.getMessage());
@@ -106,16 +97,9 @@ public class MainController implements Initializable {
     @FXML
     private void btnDeletarAction(ActionEvent event) {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
-        if (selecionado == null) {
-            DialogUtil.showError("Selecione um item na tabela para excluir!");
-            return;
-        }
-
-        boolean confirmou = DialogUtil.confirm("Deseja realmente excluir o alimento '" + selecionado.getAlimento() + "'?");
-        if (confirmou) {
+        if (selecionado != null && DialogUtil.confirm("Excluir " + selecionado.getAlimento() + "?")) {
             try {
                 alimentoService.deletarAlimento(selecionado.getId());
-                DialogUtil.showInfo("Alimento excluído com sucesso!");
                 finalizarAcao();
             } catch (Exception e) {
                 DialogUtil.showError(e.getMessage());
@@ -129,22 +113,14 @@ public class MainController implements Initializable {
             ArrayList<AlimentoDTO> lista = alimentoService.listarTudo();
             tblTabelaNutricional.setItems(FXCollections.observableArrayList(lista));
         } catch (Exception e) {
-            DialogUtil.showError("Erro ao carregar lista: " + e.getMessage());
+            DialogUtil.showError("Erro ao listar: " + e.getMessage());
         }
     }
-
-    // ==========================================
-    // MÉTODOS AUXILIARES
-    // ==========================================
 
     private void popularCampos(AlimentoDTO dto) {
         txtAlimento.setText(dto.getAlimento());
         txtCalorias.setText(String.valueOf(dto.getCalorias()));
-        if (dto.isNatural()) {
-            rbtnNaturalSim.setSelected(true);
-        } else {
-            rbtnNaturalNao.setSelected(true);
-        }
+        if (dto.isNatural()) rbtnNaturalSim.setSelected(true); else rbtnNaturalNao.setSelected(true);
         btnAlterar.setDisable(false);
         btnDeletar.setDisable(false);
     }
