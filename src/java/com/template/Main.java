@@ -2,31 +2,35 @@ package com.template;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.InputStream;
+import java.util.Objects;
 
-/**
- * Classe principal de inicialização da Aplicação JavaFX.
- */
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/template/main.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 900, 600);
+        Parent root = FXMLLoader.load(Objects.requireNonNull(
+                getClass().getResource("main.fxml"),
+                "Arquivo main.fxml não encontrado na pasta com/template!"
+        ));
 
-        primaryStage.setTitle("Nutritional CRUD - Gerenciador Nutricional");
+        primaryStage.setTitle("Nutritional CRUD");
 
-        // Carrega o ícone caso exista na pasta de recursos
-        InputStream iconStream = getClass().getResourceAsStream("/com/template/icon.png");
-        if (iconStream != null) {
-            primaryStage.getIcons().add(new Image(iconStream));
+        try {
+            InputStream iconStream = getClass().getResourceAsStream("icon.png");
+            if (iconStream != null) {
+                primaryStage.getIcons().add(new Image(iconStream));
+            }
+        } catch (Exception e) {
+            System.out.println("Ícone não encontrado, iniciando sem ícone...");
         }
 
-        primaryStage.setScene(scene);
+        primaryStage.setScene(new Scene(root, 600, 450));
         primaryStage.show();
     }
 

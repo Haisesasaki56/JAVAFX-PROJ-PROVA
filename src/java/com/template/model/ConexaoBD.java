@@ -1,9 +1,9 @@
-package com.template;
+package com.template.model;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+//ConexaoBD: Gerencia de forma centralizada a abertura da conexão com o banco de dados.
 public class ConexaoBD {
     private static final String URL = "jdbc:postgresql://localhost:5432/db_crud";
     private static final String USUARIO = "postgres";
