@@ -1,7 +1,6 @@
 package com.template;
 
 import com.template.model.dto.AlimentoDTO;
-import com.template.model.dao.AlimentoDAO;
 import com.template.service.AlimentoService;
 import com.template.util.DialogUtil;
 
@@ -31,27 +30,30 @@ public class MainController {
     @FXML private TableColumn<AlimentoDTO, Double> colCalorias;
     @FXML private TableColumn<AlimentoDTO, Boolean> colNatural;
 
-    private AlimentoService alimentoService;
+    private final AlimentoService alimentoService;
     private ToggleGroup tgNatural;
     private final ObservableList<AlimentoDTO> listaAlimentos = FXCollections.observableArrayList();
 
+    // Construtor com Injeção de Dependência
+    public MainController(AlimentoService alimentoService) {
+        this.alimentoService = alimentoService;
+    }
+
     @FXML
     public void initialize() {
-        this.alimentoService = new AlimentoService(new AlimentoDAO());
-
         // Agrupa os RadioButtons
         tgNatural = new ToggleGroup();
         rbtnNaturalSim.setToggleGroup(tgNatural);
         rbtnNaturalNao.setToggleGroup(tgNatural);
         rbtnNaturalSim.setSelected(true);
 
-        // Mapeamento das colunas com as propriedades do DTO
+        // Mapeamento das colunas da tabela com as propriedades do DTO
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colAlimento.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colCalorias.setCellValueFactory(new PropertyValueFactory<>("calorias"));
         colNatural.setCellValueFactory(new PropertyValueFactory<>("natural"));
 
-        // Habilita edição/exclusão ao clicar em uma linha da tabela
+        // Listener para seleção de linhas da tabela
         tblTabelaNutricional.getSelectionModel().selectedItemProperty().addListener((obs, antigo, selecionado) -> {
             boolean temSelecao = (selecionado != null);
             btnAlterar.setDisable(!temSelecao);
@@ -102,12 +104,14 @@ public class MainController {
                 AlimentoDTO dto = extrairCampos();
                 dto.setId(selecionado.getId());
 
-                AlimentoDAO dao = new AlimentoDAO();
-                dao.atualizar(dto);
+                // Passa o DTO e o texto das calorias para corresponder à assinatura do AlimentoService
+                alimentoService.atualizarAlimento(dto, txtCalorias.getText());
 
                 lblStatus.setText("Alimento alterado com sucesso!");
                 limparCampos();
                 atualizarTabela();
+            } catch (NumberFormatException e) {
+                DialogUtil.mostrarErro("Erro de Validação", "Insira um número válido para as calorias.");
             } catch (Exception e) {
                 DialogUtil.mostrarErro("Erro ao Alterar", e.getMessage());
             }
@@ -119,8 +123,7 @@ public class MainController {
         AlimentoDTO selecionado = tblTabelaNutricional.getSelectionModel().getSelectedItem();
         if (selecionado != null) {
             try {
-                AlimentoDAO dao = new AlimentoDAO();
-                dao.deletar(selecionado.getId());
+                alimentoService.deletarAlimento(selecionado.getId());
 
                 lblStatus.setText("Alimento excluído com sucesso!");
                 limparCampos();
