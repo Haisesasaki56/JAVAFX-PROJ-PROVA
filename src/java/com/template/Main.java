@@ -2,6 +2,8 @@ package com.template;
 
 import com.template.model.dao.AlimentoDAO;
 import com.template.service.AlimentoService;
+import com.template.validator.AlimentoValidador;
+import com.template.validator.IAlimentoValidador;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,17 +20,20 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // 1. Instancia o DAO e o Service
+        // 1. Instancia as dependências
+        IAlimentoValidador validador = new AlimentoValidador();
         AlimentoDAO dao = new AlimentoDAO();
         AlimentoService service = new AlimentoService(dao);
 
-        // 2. Configura o FXMLLoader com controllerFactory para passar o serviço no construtor
+        // 2. Localiza o arquivo FXML
         URL fxmlUrl = Objects.requireNonNull(
                 getClass().getResource("main.fxml"),
                 "Arquivo main.fxml não encontrado na pasta com/template!"
         );
+
+        // 3. Configura o FXMLLoader e passa a ordem exata dos argumentos (validador, service)
         FXMLLoader loader = new FXMLLoader(fxmlUrl);
-        loader.setControllerFactory(clazz -> new MainController(service));
+        loader.setControllerFactory(clazz -> new MainController(validador, service));
 
         Parent root = loader.load();
 

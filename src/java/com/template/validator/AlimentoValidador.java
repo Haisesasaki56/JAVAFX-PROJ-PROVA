@@ -1,46 +1,37 @@
 package com.template.validator;
 
-import com.template.model.dto.AlimentoDTO;
+import static com.template.util.DialogUtil.*;
+import javafx.scene.control.Alert.AlertType;
 
-public class AlimentoValidador {
+public class AlimentoValidador implements IAlimentoValidador {
 
-    public static void validar(AlimentoDTO dto, String caloriasTexto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("O objeto alimento não pode ser nulo.");
+    @Override
+    public boolean validarCamposAlimento(String nome, String calorias) {
+        if (nome == null || nome.trim().isEmpty()) {
+            mostrarAlerta("Erro de Validação", "Campo Obrigatório",
+                    "O nome do alimento é obrigatório.", AlertType.WARNING);
+            return false;
         }
 
-        if (dto.getNome() == null || dto.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("O nome do alimento é obrigatório.");
+        if (calorias == null || calorias.trim().isEmpty()) {
+            mostrarAlerta("Erro de Validação", "Campo Obrigatório",
+                    "O campo de calorias é obrigatório.", AlertType.WARNING);
+            return false;
         }
 
         try {
-            double cal = Double.parseDouble(caloriasTexto);
+            double cal = Double.parseDouble(calorias.replace(",", "."));
             if (cal < 0) {
-                throw new IllegalArgumentException("As calorias não podem ter valor negativo.");
+                mostrarAlerta("Erro de Validação", "Valor Inválido",
+                        "As calorias não podem ter valor negativo.", AlertType.WARNING);
+                return false;
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("As calorias devem ser um número válido.");
+            mostrarAlerta("Erro de Validação", "Formato Inválido",
+                    "As calorias devem ser um número válido.", AlertType.ERROR);
+            return false;
         }
 
-        if (dto.getProteinas() != null && dto.getProteinas() < 0) {
-            throw new IllegalArgumentException("Proteínas não podem ter valor negativo.");
-        }
-
-        if (dto.getCarboidratos() != null && dto.getCarboidratos() < 0) {
-            throw new IllegalArgumentException("Carboidratos não podem ter valor negativo.");
-        }
-
-        if (dto.getGorduras() != null && dto.getGorduras() < 0) {
-            throw new IllegalArgumentException("Gorduras não podem ter valor negativo.");
-        }
-
-        double proteinas = dto.getProteinas() != null ? dto.getProteinas() : 0.0;
-        double carboidratos = dto.getCarboidratos() != null ? dto.getCarboidratos() : 0.0;
-        double gorduras = dto.getGorduras() != null ? dto.getGorduras() : 0.0;
-
-        double totalMacros = proteinas + carboidratos + gorduras;
-        if (totalMacros > 100) {
-            throw new IllegalArgumentException("A soma dos macronutrientes não pode ultrapassar 100g.");
-        }
+        return true;
     }
 }

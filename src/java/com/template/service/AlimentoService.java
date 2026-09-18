@@ -9,13 +9,14 @@ import java.util.List;
 public class AlimentoService {
 
     private final IAlimentoDAO alimentoDAO;
+    private final AlimentoValidador alimentoValidador = new AlimentoValidador();
 
     public AlimentoService(IAlimentoDAO alimentoDAO) {
         this.alimentoDAO = alimentoDAO;
     }
 
     public void salvarAlimento(AlimentoDTO dto, String caloriasTexto) {
-        AlimentoValidador.validar(dto, caloriasTexto);
+        validarDto(dto, caloriasTexto);
         alimentoDAO.salvar(dto);
     }
 
@@ -28,7 +29,11 @@ public class AlimentoService {
     }
 
     public void atualizarAlimento(AlimentoDTO dto, String caloriasTexto) {
-        AlimentoValidador.validar(dto, caloriasTexto);
+        validarDto(dto, caloriasTexto);
         alimentoDAO.atualizar(dto);
+    }
+
+    private void validarDto(AlimentoDTO dto, String caloriasTexto) {
+        alimentoValidador.validarCamposAlimento(dto.getNome(), caloriasTexto);
     }
 }
