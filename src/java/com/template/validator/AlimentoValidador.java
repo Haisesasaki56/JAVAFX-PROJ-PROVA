@@ -1,37 +1,32 @@
 package com.template.validator;
 
-import static com.template.util.DialogUtil.*;
-import javafx.scene.control.Alert.AlertType;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.template.util.DialogUtil.mostrarErro;
 
 public class AlimentoValidador implements IAlimentoValidador {
 
     @Override
-    public boolean validarCamposAlimento(String nome, String calorias) {
-        if (nome == null || nome.trim().isEmpty()) {
-            mostrarAlerta("Erro de Validação", "Campo Obrigatório",
-                    "O nome do alimento é obrigatório.", AlertType.WARNING);
-            return false;
-        }
+    public void validarCamposAlimento(String nome, String calorias) {
+        // Lista de validadores que serão aplicados sequencialmente
+        List<Validador<String>> validadores = new ArrayList<>();
 
-        if (calorias == null || calorias.trim().isEmpty()) {
-            mostrarAlerta("Erro de Validação", "Campo Obrigatório",
-                    "O campo de calorias é obrigatório.", AlertType.WARNING);
-            return false;
-        }
+        // Adicionando os validadores de campos obrigatórios
+        validadores.add(new CampoObrigatorioValidador("Nome do Alimento", nome));
+        validadores.add(new CampoObrigatorioValidador("Calorias", calorias));
 
-        try {
-            double cal = Double.parseDouble(calorias.replace(",", "."));
-            if (cal < 0) {
-                mostrarAlerta("Erro de Validação", "Valor Inválido",
-                        "As calorias não podem ter valor negativo.", AlertType.WARNING);
-                return false;
+        // Adicionando os validadores específicos de formato
+        validadores.add(new TextoSemNumeroValidador("Nome do Alimento", nome));
+        validadores.add(new ApenasNumeroValidador("Calorias", calorias));
+
+        // Itera sobre a lista de validadores
+        for (Validador<String> validador : validadores) {
+            // Cada validador testa seu valor específico
+            if (!validador.validar(validador.getValor())) {
+                // Lança a exceção na primeira falha de validação
+                mostrarErro("Erro",validador.getMensagemErro());
             }
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Erro de Validação", "Formato Inválido",
-                    "As calorias devem ser um número válido.", AlertType.ERROR);
-            return false;
         }
-
-        return true;
     }
 }

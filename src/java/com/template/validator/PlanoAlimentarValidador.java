@@ -1,18 +1,28 @@
 package com.template.validator;
 
-public class PlanoAlimentarValidador {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static void validar(String paciente, String metaCalorias) {
-        if (paciente == null || paciente.trim().isEmpty()) {
-            throw new IllegalArgumentException("O nome do paciente é obrigatório!");
-        }
-        try {
-            double meta = Double.parseDouble(metaCalorias);
-            if (meta <= 0) {
-                throw new IllegalArgumentException("A meta de calorias deve ser maior que zero!");
+public class PlanoAlimentarValidador implements IPlanoAlimentarValidador {
+
+    @Override
+    public void validarCamposPlanoAlimentar(String paciente, String metaCalorias) {
+        // Lista de validadores que serão aplicados sequencialmente
+        List<Validador<String>> validadores = new ArrayList<>();
+
+        // 1. Adicionando validadores de campos obrigatórios
+        validadores.add(new CampoObrigatorioValidador("Paciente", paciente));
+        validadores.add(new CampoObrigatorioValidador("Meta de Calorias", metaCalorias));
+
+        // 2. Adicionando validações de formato
+        validadores.add(new TextoSemNumeroValidador("Paciente", paciente));
+        validadores.add(new ApenasNumeroValidador("Meta de Calorias", metaCalorias));
+
+        // Itera sobre a lista de validadores
+        for (Validador<String> validador : validadores) {
+            if (!validador.validar(validador.getValor())) {
+                throw new IllegalArgumentException(validador.getMensagemErro());
             }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("A meta de calorias deve ser um número válido!");
         }
     }
 }

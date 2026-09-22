@@ -20,10 +20,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // 1. Instancia as dependências
+        // 1. Instancia as dependências (passando dao e validador no service)
         IAlimentoValidador validador = new AlimentoValidador();
         AlimentoDAO dao = new AlimentoDAO();
-        AlimentoService service = new AlimentoService(dao);
+        AlimentoService service = new AlimentoService(dao, validador);
 
         // 2. Localiza o arquivo FXML
         URL fxmlUrl = Objects.requireNonNull(
@@ -31,7 +31,7 @@ public class Main extends Application {
                 "Arquivo main.fxml não encontrado na pasta com/template!"
         );
 
-        // 3. Configura o FXMLLoader e passa a ordem exata dos argumentos (validador, service)
+        // 3. Configura o FXMLLoader e passa o validador e service para o MainController
         FXMLLoader loader = new FXMLLoader(fxmlUrl);
         loader.setControllerFactory(clazz -> new MainController(validador, service));
 

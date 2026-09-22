@@ -27,12 +27,12 @@ public class MainController {
 
     public MainController() {
         this.validador = new AlimentoValidador();
-        this.alimentoService = new AlimentoService(new AlimentoDAO());
+        this.alimentoService = new AlimentoService(new AlimentoDAO(), this.validador);
     }
 
     public MainController(IAlimentoValidador validador) {
         this.validador = validador;
-        this.alimentoService = new AlimentoService(new AlimentoDAO());
+        this.alimentoService = new AlimentoService(new AlimentoDAO(), validador);
     }
 
     public MainController(IAlimentoValidador validador, AlimentoService alimentoService) {
@@ -55,13 +55,14 @@ public class MainController {
     private void btnSalvarAction(ActionEvent event) {
         String[] campos = extrairCampos(txtAlimento, txtCalorias);
 
-        if (!validador.validarCamposAlimento(campos[0], campos[1])) {
-            return;
+        try {
+            AlimentoDTO dto = extrairDtoDoFormulario(campos);
+            // O serviço trata a validação antes da conversão e do salvamento
+            alimentoService.salvarAlimento(dto, campos[1]);
+            posAcaoSucesso("Alimento salvo com sucesso!");
+        } catch (IllegalArgumentException e) {
+            mostrarAlerta("Erro de Validação", null, e.getMessage(), AlertType.ERROR);
         }
-
-        AlimentoDTO dto = extrairDtoDoFormulario(campos);
-        alimentoService.salvarAlimento(dto, campos[1]);
-        posAcaoSucesso("Alimento salvo com sucesso!");
     }
 
     @FXML
@@ -76,15 +77,15 @@ public class MainController {
 
         String[] campos = extrairCampos(txtAlimento, txtCalorias);
 
-        if (!validador.validarCamposAlimento(campos[0], campos[1])) {
-            return;
+        try {
+            AlimentoDTO dto = extrairDtoDoFormulario(campos);
+            dto.setId(selecionado.getId());
+
+            alimentoService.atualizarAlimento(dto, campos[1]);
+            posAcaoSucesso("Alimento alterado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            mostrarAlerta("Erro de Validação", null, e.getMessage(), AlertType.ERROR);
         }
-
-        AlimentoDTO dto = extrairDtoDoFormulario(campos);
-        dto.setId(selecionado.getId());
-
-        alimentoService.atualizarAlimento(dto, campos[1]);
-        posAcaoSucesso("Alimento alterado com sucesso!");
     }
 
     @FXML
@@ -169,8 +170,8 @@ public class MainController {
     private AlimentoDTO extrairDtoDoFormulario(String[] campos) {
         AlimentoDTO dto = new AlimentoDTO();
         dto.setNome(campos[0]);
-        dto.setCalorias(Double.parseDouble(campos[1].replace(",", ".")));
         dto.setNatural(rbtnNaturalSim.isSelected());
+        // Não fazemos o parse do Double aqui para não quebrar com NumberFormatException antes de validar!
         return dto;
     }
 
